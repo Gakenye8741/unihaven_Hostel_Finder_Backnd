@@ -6,18 +6,29 @@ export type EmailType =
   | "welcome" | "verification" | "password-reset" | "alert"
   | "generic" | "suspension" | "unsuspension" | "listing" | "verified";
 
-// Initialize Transporter
+
+// Initialize Transporter with Render-optimized settings
 const transporter = nodemailer.createTransport({
   service: "gmail",
   host: "smtp.gmail.com",
   port: 465,
-  secure: true,
+  secure: true, // Use SSL
+  pool: true,   // Use pooling to prevent connection timeouts on Render
+  maxConnections: 3,
+  maxMessages: 100,
   auth: {
     user: process.env.EMAIL_SENDER,
-    pass: process.env.EMAIL_PASSWORD,
+    pass: process.env.EMAIL_PASSWORD, // Must be 16-character App Password
   },
-  // Adding a timeout and more robust TLS settings
-  connectionTimeout: 60000, 
+  tls: {
+    // This prevents the connection from hanging if the certificate 
+    // handshake takes too long on the cloud server
+    rejectUnauthorized: false, 
+    minVersion: 'TLSv1.2'
+  },
+  connectionTimeout: 20000, // 20 seconds
+  greetingTimeout: 20000,
+  socketTimeout: 30000,
 });
 
 // --- DEBUG: Verify Connection on Start ---
