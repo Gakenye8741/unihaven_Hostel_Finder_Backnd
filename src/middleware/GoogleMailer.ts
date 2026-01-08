@@ -9,26 +9,20 @@ export type EmailType =
 
 // Initialize Transporter with Render-optimized settings
 const transporter = nodemailer.createTransport({
-  service: "gmail",
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // Use SSL
-  pool: true,   // Use pooling to prevent connection timeouts on Render
-  maxConnections: 3,
-  maxMessages: 100,
+  port: 587,
+  secure: false, // Must be false for 587
   auth: {
     user: process.env.EMAIL_SENDER,
-    pass: process.env.EMAIL_PASSWORD, // Must be 16-character App Password
+    pass: process.env.EMAIL_PASSWORD, 
   },
   tls: {
-    // This prevents the connection from hanging if the certificate 
-    // handshake takes too long on the cloud server
-    rejectUnauthorized: false, 
-    minVersion: 'TLSv1.2'
+    // This is crucial for Render to talk to Gmail
+    ciphers: 'SSLv3',
+    rejectUnauthorized: false
   },
-  connectionTimeout: 20000, // 20 seconds
-  greetingTimeout: 20000,
-  socketTimeout: 30000,
+  pool: true,
+  connectionTimeout: 10000, // 10 seconds is plenty if it's going to work
 });
 
 // --- DEBUG: Verify Connection on Start ---
