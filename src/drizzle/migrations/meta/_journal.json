@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1757765827074,
+      "tag": "0000_charming_glorian",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1757927808525,
+      "tag": "0001_tiresome_crusher_hogan",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767548120398,
+      "tag": "0002_crazy_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1767615066193,
+      "tag": "0003_first_retro_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1767798043000,
+      "tag": "0004_ambitious_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1767814310308,
+      "tag": "0005_first_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1767815178385,
+      "tag": "0006_neat_microbe",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1767862534314,
+      "tag": "0007_fantastic_gabe_jones",
+      "breakpoints": true
+    }
+  ]
+}
