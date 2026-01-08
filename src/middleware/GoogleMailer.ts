@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASSWORD,
   },
   // Adding a timeout and more robust TLS settings
-  connectionTimeout: 10000, 
+  connectionTimeout: 60000, 
 });
 
 // --- DEBUG: Verify Connection on Start ---
