@@ -37,6 +37,7 @@
     "nodemailer": "^7.0.3",
     "pg": "^8.16.0",
     "rate-limiter-flexible": "^7.1.1",
+    "resend": "^6.7.0",
     "stripe": "^18.3.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.4",
