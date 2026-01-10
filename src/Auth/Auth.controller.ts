@@ -127,12 +127,13 @@ export const verifyEmail: RequestHandler = async (req, res) => {
     }
 
     // Send Welcome Email
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
     await sendNotificationEmail(
       email,
       "Account Verified",
       null,
       "Your account has been successfully verified! You can now explore, book, and manage hostel listings on Unihaven.",
-      emailButton("Go to Dashboard", `${process.env.FRONTEND_URL}/dashboard`),
+      emailButton("Go to Dashboard", `${frontendUrl}/dashboard`),
       "welcome"
     );
 
@@ -202,7 +203,7 @@ export const forgotPassword: RequestHandler = async (req, res) => {
 
 export const resetPassword: RequestHandler = async (req, res) => {
   try {
-    const { token, newPassword } = req.body; // Add a Zod schema for this if needed
+    const { token, newPassword } = req.body; 
     if (!token || !newPassword) {
       res.status(400).json({ message: "Token and new password are required." });
       return;
