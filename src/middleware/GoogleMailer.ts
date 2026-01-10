@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -6,15 +6,27 @@ export type EmailType =
   | "welcome" | "verification" | "password-reset" | "alert"
   | "generic" | "suspension" | "unsuspension" | "listing" | "verified";
 
-// Initialize Resend with your API Key
-const resend = new Resend(process.env.RESEND_API_KEY);
+// --- TRANSPORTER CONFIGURATION ---
+const transporter = nodemailer.createTransport({
+  service: "gmail", 
+  auth: {
+    user: process.env.EMAIL_SENDER,
+    pass: process.env.EMAIL_PASSWORD, 
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
 
-// --- Simple status check (Resend doesn't use .verify(), so we just log the key presence) ---
-if (!process.env.RESEND_API_KEY) {
-  console.error("❌ Resend Error: RESEND_API_KEY is missing in environment variables.");
-} else {
-  console.log("✅ Resend is configured and ready.");
-}
+// --- CONNECTION VERIFICATION ---
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ Mailer Connection Error:", error.message);
+    console.error("👉 Action Required: Ensure your App Password is correct and 2FA is enabled.");
+  } else {
+    console.log("✅ Mailer Status: Ready to send emails via", process.env.EMAIL_SENDER);
+  }
+});
 
 export const sendNotificationEmail = async (
   email: string,
@@ -24,7 +36,8 @@ export const sendNotificationEmail = async (
   extraHtml?: string,
   type: EmailType = "generic"
 ): Promise<string> => {
-  console.log(`\n📧 Attempting to send [${type}] email to: ${email}...`);
+  console.log(`\n---------------------------------------------------------`);
+  console.log(`📧 [PREPARING] Type: ${type} | Recipient: ${email}`);
 
   try {
     const themes = {
@@ -44,10 +57,6 @@ export const sendNotificationEmail = async (
     const fullHtml = `
     <!DOCTYPE html>
     <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
     <body style="font-family: Arial, sans-serif; background-color: #F9FAFB; margin: 0; padding: 0;">
       <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #F9FAFB; padding: 20px 0;">
         <tr>
@@ -66,26 +75,31 @@ export const sendNotificationEmail = async (
     </body>
     </html>`;
 
-    // Send using Resend SDK
-    const { data, error } = await resend.emails.send({
-      from: 'Unihaven <onboarding@resend.dev>', // Use onboarding@resend.dev for testing
-      to: [email],
+    const mailOptions = {
+      from: `"Unihaven" <${process.env.EMAIL_SENDER}>`,
+      to: email,
       subject: `${theme.emoji} ${subject}`,
+      text: message,
       html: fullHtml,
-    });
+    };
 
-    if (error) {
-      console.error("❌ Resend Sending Failed:", error);
-      return `❌ Email error: ${error.message}`;
-    }
+    // Attempting to send
+    const info = await transporter.sendMail(mailOptions);
+    
+    // --- DETAILED CONSOLE LOGS ---
+    console.log("✅ [SUCCESS] Email delivered to Gmail server");
+    console.log("   ➤ Message ID:", info.messageId);
+    console.log("   ➤ Server Response:", info.response);
+    console.log("   ➤ Accepted Recipients:", info.accepted.join(', '));
+    console.log(`---------------------------------------------------------\n`);
 
-    console.log("📨 Email sent successfully via Resend:");
-    console.log("   - ID:", data?.id);
-
-    return "✅ Email sent";
+    return "✅ Email sent successfully";
   } catch (error: any) {
-    console.error("❌ Email Sending Failed:");
-    console.error("   - Error Message:", error.message);
+    // --- DETAILED ERROR LOGS ---
+    console.error("❌ [FAILURE] Email failed to send");
+    console.error("   ➤ Error Message:", error.message);
+    if (error.code) console.error("   ➤ Error Code:", error.code);
+    console.log(`---------------------------------------------------------\n`);
     
     return `❌ Email error: ${error.message}`;
   }
