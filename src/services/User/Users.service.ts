@@ -14,7 +14,7 @@ export const getUserByIdService = async (userId: string): Promise<TSelectUser | 
 };
 
 // ==========================================
-// 2. SUBMIT VERIFICATION DOCUMENTS
+// 2. SUBMIT VERIFICATION DOCUMENTS (WITH RE-APPLY LOGIC)
 // ==========================================
 export const submitVerificationDocsService = async (
   userId: string,
@@ -25,11 +25,37 @@ export const submitVerificationDocsService = async (
     passportImageUrl: string;
   }
 ): Promise<TSelectUser | undefined> => {
+  
+  // 1. First, fetch the user to check their current status
+  const existingUser = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: {
+      identityVerificationStatus: true,
+    },
+  });
+
+  if (!existingUser) {
+    throw new Error("User record not found.");
+  }
+
+  // 2. Define the Guard Logic:
+  // Only permit submission if the status is NOT_SUBMITTED or REJECTED
+  const canApply = 
+    existingUser.identityVerificationStatus === "NOT_SUBMITTED" || 
+    existingUser.identityVerificationStatus === "REJECTED";
+
+  if (!canApply) {
+    throw new Error(
+      `Cannot submit: Current status is ${existingUser.identityVerificationStatus}`
+    );
+  }
+
+  // 3. Perform the update
   const [updatedUser] = await db
     .update(users)
     .set({
       ...payload,
-      identityVerificationStatus: "PENDING",
+      identityVerificationStatus: "PENDING", // Flip back to pending for admin review
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId))

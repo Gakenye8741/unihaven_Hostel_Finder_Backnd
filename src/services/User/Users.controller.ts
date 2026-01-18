@@ -34,6 +34,7 @@ export const getUserProfile: RequestHandler = async (req, res) => {
   }
 };
 
+
 // --------------------------- 2. SUBMIT VERIFICATION DOCS ---------------------------
 export const submitIDDocuments: RequestHandler = async (req, res) => {
   try {
@@ -43,16 +44,42 @@ export const submitIDDocuments: RequestHandler = async (req, res) => {
       return;
     }
 
+    // 1. Validate the payload (idNumber, images, etc.)
     const parseResult = identityVerificationSchema.safeParse(req.body);
     if (!parseResult.success) {
-      res.status(400).json({ error: parseResult.error.issues });
+      res.status(400).json({ 
+        error: "Validation failed", 
+        details: parseResult.error.issues 
+      });
       return;
     }
 
+    // 2. Attempt to submit via service
     const updated = await submitVerificationDocsService(userId, parseResult.data);
-    res.status(200).json({ message: "Documents submitted for review 📄", data: updated });
+
+    res.status(200).json({ 
+      message: "Credentials vaulted successfully. Audit is now PENDING. 🛡️", 
+      data: updated 
+    });
+
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    // 3. Handle Business Logic Errors (Status locked/User not found)
+    if (error.message.includes("Application locked") || error.message.includes("Cannot submit")) {
+      res.status(403).json({ 
+        error: "Forbidden action", 
+        message: error.message // "Cannot submit: Current status is PENDING/APPROVED"
+      });
+      return;
+    }
+
+    if (error.message === "User record not found.") {
+      res.status(404).json({ error: error.message });
+      return;
+    }
+
+    // 4. Generic Server Error
+    console.error("Verification Submission Error:", error);
+    res.status(500).json({ error: "Internal server error during document vaulting." });
   }
 };
 
