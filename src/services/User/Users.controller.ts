@@ -10,7 +10,7 @@ import {
   getMyCaretakersService,
   getPendingVerificationsService,
   getUserStatsService,
-  deleteUserService // 🛰️ Service now active
+  deleteUserService 
 } from "./Users.service";
 import {
   updateProfileSchema,
@@ -23,7 +23,7 @@ import {
 export const getUserProfile: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await getUserByIdService(id);
+    const user = await getUserByIdService(id as string);
     if (!user) {
       res.status(404).json({ error: "User not found. 🔍" });
       return;
@@ -91,7 +91,7 @@ export const verifyUserIdentity: RequestHandler = async (req, res) => {
     }
 
     const { status, targetRole, remarks } = parseResult.data;
-    const updated = await adminVerifyIdentityService(id, status, targetRole, remarks);
+    const updated = await adminVerifyIdentityService(id as string, status, targetRole, remarks);
     
     res.status(200).json({ message: `Verification ${status} successfully ✅`, data: updated });
   } catch (error: any) {
@@ -110,7 +110,7 @@ export const setAccountStatus: RequestHandler = async (req, res) => {
       return;
     }
 
-    const updated = await updateAccountStatusService(id, parseResult.data.status);
+    const updated = await updateAccountStatusService(id as string, parseResult.data.status);
     res.status(200).json({ message: `Account status updated to ${parseResult.data.status} 🛡️`, data: updated });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -160,8 +160,7 @@ export const adminUpdateUser: RequestHandler = async (req, res) => {
         return;
       }
   
-      // Explicitly calling service with validated data including role
-      const updated = await updateProfileService(id, parseResult.data);
+      const updated = await updateProfileService(id as string, parseResult.data);
       res.status(200).json({ message: "User data synchronized by Admin 🛰️", data: updated });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -172,8 +171,7 @@ export const adminUpdateUser: RequestHandler = async (req, res) => {
 export const deleteUser: RequestHandler = async (req, res) => {
     try {
       const { id } = req.params;
-      // 🗑️ Hard deletion protocol triggered
-      const deleted = await deleteUserService(id); 
+      const deleted = await deleteUserService(id as string); 
       
       if (!deleted) {
         res.status(404).json({ error: "User node not found for deletion. 🔍" });
@@ -216,4 +214,3 @@ export const getSystemUserStats: RequestHandler = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
