@@ -31,7 +31,7 @@ export const addRoom: RequestHandler = async (req, res) => {
 export const listHostelRooms: RequestHandler = async (req, res) => {
   try {
     const { hostelId } = req.params;
-    const rooms = await getRoomsByHostelService(hostelId);
+    const rooms = await getRoomsByHostelService(hostelId as string);
     res.status(200).json(rooms);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -49,7 +49,7 @@ export const updateRoom: RequestHandler = async (req, res) => {
       return;
     }
 
-    const updatedRoom = await updateRoomService(id, hostelId, parseResult.data.body);
+    const updatedRoom = await updateRoomService(id as string, hostelId as string, parseResult.data.body);
     if (!updatedRoom) {
       res.status(404).json({ error: "Room not found or unauthorized to update. ❌" });
       return;
@@ -62,9 +62,6 @@ export const updateRoom: RequestHandler = async (req, res) => {
 };
 
 // --------------------------- 4. SET ROOM STATUS ---------------------------
-/**
- * Handles manual toggles for Occupied, Available, or Maintenance
- */
 export const setRoomStatus: RequestHandler = async (req, res) => {
   try {
     const parseResult = updateRoomStatusSchema.safeParse({ params: req.params, body: req.body });
@@ -77,9 +74,9 @@ export const setRoomStatus: RequestHandler = async (req, res) => {
     const { status } = req.body;
 
     let updated;
-    if (status === "Full") updated = await markRoomAsOccupiedService(id);
-    else if (status === "Available") updated = await markRoomAsAvailableService(id);
-    else if (status === "Maintenance") updated = await markRoomAsMaintenanceService(id);
+    if (status === "Full") updated = await markRoomAsOccupiedService(id as string);
+    else if (status === "Available") updated = await markRoomAsAvailableService(id as string);
+    else if (status === "Maintenance") updated = await markRoomAsMaintenanceService(id as string);
 
     if (!updated) {
       res.status(404).json({ error: "Room not found. 🔍" });
@@ -96,7 +93,7 @@ export const setRoomStatus: RequestHandler = async (req, res) => {
 export const getRoomStats: RequestHandler = async (req, res) => {
   try {
     const { hostelId } = req.params;
-    const stats = await getHostelRoomStatsService(hostelId);
+    const stats = await getHostelRoomStatsService(hostelId as string);
     res.status(200).json(stats);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -107,7 +104,7 @@ export const getRoomStats: RequestHandler = async (req, res) => {
 export const removeRoom: RequestHandler = async (req, res) => {
   try {
     const { id, hostelId } = req.params;
-    const deleted = await deleteRoomService(id, hostelId);
+    const deleted = await deleteRoomService(id as string, hostelId as string);
 
     if (!deleted) {
       res.status(404).json({ error: "Room not found. 🔍" });

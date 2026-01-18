@@ -19,7 +19,7 @@ export const addReview: RequestHandler = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) {
         res.status(401).json({ error: "Unauthorized" });
-        return; // Empty return returns 'void', satisfying TS
+        return; 
     }
 
     const parseResult = createReviewSchema.safeParse({ 
@@ -28,12 +28,11 @@ export const addReview: RequestHandler = async (req, res) => {
 
     if (!parseResult.success) {
       res.status(400).json({ error: parseResult.error.issues });
-      return; // Exit function without returning the response object
+      return; 
     }
 
     const review = await addReviewService(parseResult.data.body);
     res.status(201).json({ message: "Review posted successfully! ⭐", review });
-    // No return needed here as it's the end of the function
   } catch (error: any) {
     res.status(500).json({ error: error.message || "Failed" });
   }
@@ -43,9 +42,10 @@ export const addReview: RequestHandler = async (req, res) => {
 export const listHostelReviews: RequestHandler = async (req, res) => {
   try {
     const { hostelId } = req.params;
+    // Fix: cast hostelId to string for service compatibility
     const [reviewsList, stats] = await Promise.all([
-      getHostelReviewsService(hostelId),
-      getHostelRatingStatsService(hostelId)
+      getHostelReviewsService(hostelId as string),
+      getHostelRatingStatsService(hostelId as string)
     ]);
 
     res.status(200).json({ stats, reviews: reviewsList });
@@ -66,7 +66,8 @@ export const updateReview: RequestHandler = async (req, res) => {
       return;
     }
 
-    const updated = await updateReviewService(id, userId!, parseResult.data.body);
+    // Fix: cast id and userId to string
+    const updated = await updateReviewService(id as string, userId as string, parseResult.data.body);
     if (!updated) {
       res.status(404).json({ error: "Review not found or unauthorized" });
       return;
@@ -81,7 +82,6 @@ export const updateReview: RequestHandler = async (req, res) => {
 // --------------------------- 4. OWNER REPLY ---------------------------
 export const replyToReview: RequestHandler = async (req, res) => {
   try {
-    // 1. Validate using Zod
     const parseResult = replyReviewSchema.safeParse({ 
       params: req.params, 
       body: req.body 
@@ -92,14 +92,11 @@ export const replyToReview: RequestHandler = async (req, res) => {
       return;
     }
 
-    // 2. Extract clean data from parseResult
-    // This ensures we only use data that passed validation
     const { id } = parseResult.data.params;
     const { ownerReply } = parseResult.data.body;
 
-    // 3. Pass to service
-    // FIX: Passing 'ownerReply' as a string to match the service signature
-    const updated = await replyToReviewService(id, ownerReply); 
+    // Fix: cast id to string
+    const updated = await replyToReviewService(id as string, ownerReply); 
     
     if (!updated) {
       res.status(404).json({ error: "Review not found" });
@@ -108,7 +105,6 @@ export const replyToReview: RequestHandler = async (req, res) => {
 
     res.status(200).json({ message: "Reply posted successfully 💬", updated });
   } catch (error: any) {
-    // Drizzle throws "No values to set" if the update object is empty
     res.status(500).json({ error: error.message });
   }
 };
@@ -121,7 +117,8 @@ export const removeReview: RequestHandler = async (req, res) => {
     const userRole = req.user?.role;
 
     const isAdmin = userRole === "Admin";
-    const success = await deleteReviewService(id, userId, isAdmin);
+    // Fix: cast id and userId to string
+    const success = await deleteReviewService(id as string, userId as string, isAdmin);
 
     if (!success) {
       res.status(404).json({ error: "Review not found or unauthorized" });

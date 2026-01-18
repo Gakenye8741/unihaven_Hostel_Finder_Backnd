@@ -16,7 +16,7 @@ export const addHostelMedia: RequestHandler = async (req, res) => {
     // mediaItems: Array of { url: string, isThumbnail: boolean, type: "Image" | "Video" }
 
     // Security: Only Owner, Caretaker, or Admin can add photos
-    const hostel = await getHostelByIdService(hostelId);
+    const hostel = await getHostelByIdService(hostelId as string);
     if (!hostel) {
       res.status(404).json({ error: "Hostel not found" });
       return;
@@ -29,7 +29,7 @@ export const addHostelMedia: RequestHandler = async (req, res) => {
 
     const formattedMedia = mediaItems.map((item: any) => ({
       ...item,
-      hostelId
+      hostelId: hostelId as string
     }));
 
     const result = await addHostelMediaService(formattedMedia);
@@ -48,13 +48,13 @@ export const updateHostelMedia: RequestHandler = async (req, res) => {
     const { hostelId, url, isThumbnail, type } = req.body;
 
     // Security Check
-    const hostel = await getHostelByIdService(hostelId);
+    const hostel = await getHostelByIdService(hostelId as string);
     if (hostel?.ownerId !== req.user?.id && req.user?.role !== "Admin" && req.user?.role !== "Caretaker") {
       res.status(403).json({ error: "Unauthorized" });
       return;
     }
 
-    const updated = await updateMediaService(mediaId, hostelId, { url, isThumbnail, type });
+    const updated = await updateMediaService(mediaId as string, hostelId as string, { url, isThumbnail, type });
     res.status(200).json({ message: "Media updated successfully", updated });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -67,7 +67,7 @@ export const updateHostelMedia: RequestHandler = async (req, res) => {
 export const getHostelGallery: RequestHandler = async (req, res) => {
   try {
     const { hostelId } = req.params;
-    const gallery = await getMediaByHostelService(hostelId);
+    const gallery = await getMediaByHostelService(hostelId as string);
     res.status(200).json(gallery);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -82,13 +82,13 @@ export const removeHostelMedia: RequestHandler = async (req, res) => {
     const { mediaId, hostelId } = req.params;
 
     // Security Check
-    const hostel = await getHostelByIdService(hostelId);
+    const hostel = await getHostelByIdService(hostelId as string);
     if (hostel?.ownerId !== req.user?.id && req.user?.role !== "Admin") {
       res.status(403).json({ error: "Unauthorized: Only Owners or Admins can delete media." });
       return;
     }
 
-    const result = await deleteMediaService(mediaId, hostelId);
+    const result = await deleteMediaService(mediaId as string, hostelId as string);
     res.status(200).json(result);
   } catch (error: any) {
     res.status(500).json({ error: error.message });

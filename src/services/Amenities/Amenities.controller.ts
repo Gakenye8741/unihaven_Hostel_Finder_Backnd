@@ -54,7 +54,7 @@ export const updateAmenity: RequestHandler = async (req, res) => {
       return;
     }
 
-    const updated = await updateGlobalAmenityService(id, parseResult.data);
+    const updated = await updateGlobalAmenityService(id as string, parseResult.data);
     if (!updated) {
       res.status(404).json({ error: "Amenity not found" });
       return;
@@ -69,21 +69,17 @@ export const updateAmenity: RequestHandler = async (req, res) => {
 export const deleteAmenity: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await deleteGlobalAmenityService(id);
+    const result = await deleteGlobalAmenityService(id as string);
     res.status(200).json(result);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// ==========================================
-// 2. HOSTEL AMENITIES (Associations)
-// ==========================================
-
 export const getHostelAmenities: RequestHandler = async (req, res) => {
   try {
     const { hostelId } = req.params;
-    const data = await getHostelAmenitiesService(hostelId);
+    const data = await getHostelAmenitiesService(hostelId as string);
     res.status(200).json(data);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -93,19 +89,14 @@ export const getHostelAmenities: RequestHandler = async (req, res) => {
 export const syncAmenities: RequestHandler = async (req, res) => {
   try {
     const { hostelId } = req.params;
-    
-    // Validate the list of IDs sent in body
     const parseResult = syncHostelAmenitiesSchema.shape.body.safeParse(req.body);
     if (!parseResult.success) {
       res.status(400).json({ error: parseResult.error.flatten().fieldErrors });
       return;
     }
 
-    const result = await syncHostelAmenitiesService(hostelId, parseResult.data.amenityIds);
-    res.status(200).json({ 
-      message: "Hostel amenities updated successfully! 🔄", 
-      count: result.length 
-    });
+    const result = await syncHostelAmenitiesService(hostelId as string, parseResult.data.amenityIds);
+    res.status(200).json({ message: "Hostel amenities updated successfully! 🔄", count: result.length });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -114,7 +105,7 @@ export const syncAmenities: RequestHandler = async (req, res) => {
 export const addHostelAmenity: RequestHandler = async (req, res) => {
   try {
     const { hostelId, amenityId } = req.params;
-    const result = await addSingleAmenityToHostelService(hostelId, amenityId);
+    const result = await addSingleAmenityToHostelService(hostelId as string, amenityId as string);
     res.status(201).json({ message: "Amenity linked! ✅", result });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -124,7 +115,7 @@ export const addHostelAmenity: RequestHandler = async (req, res) => {
 export const removeHostelAmenity: RequestHandler = async (req, res) => {
   try {
     const { hostelId, amenityId } = req.params;
-    const result = await removeSingleAmenityFromHostelService(hostelId, amenityId);
+    const result = await removeSingleAmenityFromHostelService(hostelId as string, amenityId as string);
     res.status(200).json(result);
   } catch (error: any) {
     res.status(500).json({ error: error.message });

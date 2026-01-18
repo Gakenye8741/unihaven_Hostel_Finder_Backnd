@@ -51,6 +51,7 @@ export const addHostel: RequestHandler = async (req, res) => {
   }
 };
 
+
 // --------------------------- 2. LIST HOSTELS (Public) ---------------------------
 export const listHostels: RequestHandler = async (req, res) => {
   try {
@@ -68,29 +69,15 @@ export const listHostels: RequestHandler = async (req, res) => {
   }
 };
 
-// // --------------------------- 3. GET SINGLE HOSTEL ---------------------------
-// export const getHostelDetails: RequestHandler = async (req, res) => {
-//   try {
-//     const hostel = await getHostelByIdService(req.params.id);
-//     if (!hostel) {
-//       res.status(404).json({ error: "Hostel not found. 🔍" });
-//       return;
-//     }
-//     res.status(200).json(hostel);
-//   } catch (error: any) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
+// --------------------------- 3. GET SINGLE HOSTEL ---------------------------
 export const getHostelDetails: RequestHandler = async (req, res) => {
   try {
-    const hostel = await getHostelByIdService(req.params.id);
+    const hostel = await getHostelByIdService(req.params.id as string);
     if (!hostel) {
       res.status(404).json({ error: "Hostel not found. 🔍" });
       return;
     }
 
-    // MANUALLY SPREAD TO TEST SERIALIZATION
     const safeData = {
       ...hostel,
       owner: hostel.owner ? { ...hostel.owner } : null
@@ -120,8 +107,7 @@ export const updateHostel: RequestHandler = async (req, res) => {
       return;
     }
 
-    // Service logic handles checking if this userId owns the hostel
-    const updated = await updateHostelService(id, userId, parseResult.data);
+    const updated = await updateHostelService(id as string, userId as string, parseResult.data);
     res.status(200).json({ message: "Hostel updated successfully 🏠", updated });
   } catch (error: any) {
     const status = error.message.includes("Unauthorized") ? 403 : 500;
@@ -136,8 +122,7 @@ export const deleteHostel: RequestHandler = async (req, res) => {
     const userId = req.user?.id as string;
     const userRole = req.user?.role as string;
 
-    // Admin can delete any, Owner can only delete their own
-    const result = await deleteHostelService(id, userId, userRole);
+    const result = await deleteHostelService(id as string, userId, userRole);
     res.status(200).json(result);
   } catch (error: any) {
     const status = error.message.includes("Unauthorized") ? 403 : 500;
@@ -156,7 +141,7 @@ export const verifyHostel: RequestHandler = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body; 
 
-    const updated = await toggleHostelVerificationService(id, status);
+    const updated = await toggleHostelVerificationService(id as string, status);
     res.status(200).json({ message: `Hostel verification set to ${status}`, updated });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
