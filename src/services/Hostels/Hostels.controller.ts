@@ -68,7 +68,20 @@ export const listHostels: RequestHandler = async (req, res) => {
   }
 };
 
-// --------------------------- 3. GET SINGLE HOSTEL ---------------------------
+// // --------------------------- 3. GET SINGLE HOSTEL ---------------------------
+// export const getHostelDetails: RequestHandler = async (req, res) => {
+//   try {
+//     const hostel = await getHostelByIdService(req.params.id);
+//     if (!hostel) {
+//       res.status(404).json({ error: "Hostel not found. 🔍" });
+//       return;
+//     }
+//     res.status(200).json(hostel);
+//   } catch (error: any) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const getHostelDetails: RequestHandler = async (req, res) => {
   try {
     const hostel = await getHostelByIdService(req.params.id);
@@ -76,7 +89,15 @@ export const getHostelDetails: RequestHandler = async (req, res) => {
       res.status(404).json({ error: "Hostel not found. 🔍" });
       return;
     }
-    res.status(200).json(hostel);
+
+    // MANUALLY SPREAD TO TEST SERIALIZATION
+    const safeData = {
+      ...hostel,
+      owner: hostel.owner ? { ...hostel.owner } : null
+    };
+
+    console.log("BACKEND LOG - OWNER CHECK:", !!safeData.owner);
+    res.status(200).json(safeData);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
