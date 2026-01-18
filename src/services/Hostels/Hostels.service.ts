@@ -1,12 +1,11 @@
-import  db  from "../../drizzle/db";
+import db from "../../drizzle/db";
 import { hostels, TInsertHostel, TSelectHostel } from "../../drizzle/schema";
-import { eq, ilike, and, or, sql } from "drizzle-orm";
+import { eq, ilike, and, or } from "drizzle-orm";
 
 // ==========================================
 // 1. CREATE: Add a new hostel
 // ==========================================
 export const createHostelService = async (data: TInsertHostel): Promise<TSelectHostel> => {
-  // Check if a hostel with the same name already exists at this address (prevent duplicates)
   const existing = await db.select().from(hostels).where(
     and(
       eq(hostels.name, data.name),
@@ -51,23 +50,37 @@ export const getHostelsService = async (filters: {
 };
 
 // Get single hostel by ID
-export const getHostelByIdService = async (id: string): Promise<TSelectHostel | undefined> => {
-  const result = await db.select().from(hostels).where(eq(hostels.id, id)).limit(1);
-  return result[0];
+export const getHostelByIdService = async (id: string) => {
+  const result = await db.query.hostels.findFirst({
+    // Use the imported 'eq' directly to avoid the private property mismatch error
+    where: eq(hostels.id, id),
+    with: {
+      owner: {
+        columns: {
+          id: true,
+          fullName: true,
+          phone: true,
+          whatsappPhone: true,
+          email: true,
+        }
+      }
+    }
+  });
+
+  return result;
 };
 
 // ==========================================
 // 3. UPDATE: Modify existing hostel
 // ==========================================
 export const updateHostelService = async (id: string, userId: string, data: Partial<TInsertHostel>) => {
-  // Security check: Verify the user requesting the update owns this hostel
   const hostel = await getHostelByIdService(id);
   if (!hostel) throw new Error("Hostel not found.");
   if (hostel.ownerId !== userId) throw new Error("Unauthorized: You do not own this hostel.");
 
   const [updatedHostel] = await db
     .update(hostels)
-    .set({ ...data }) // Partial update allows updating just one field (e.g., description)
+    .set({ ...data })
     .where(eq(hostels.id, id))
     .returning();
 
@@ -81,7 +94,6 @@ export const deleteHostelService = async (id: string, userId: string, userRole: 
   const hostel = await getHostelByIdService(id);
   if (!hostel) throw new Error("Hostel not found.");
 
-  // Security check: Only the Owner or an Admin can delete
   if (hostel.ownerId !== userId && userRole !== "Admin") {
     throw new Error("Unauthorized: You cannot delete this listing.");
   }

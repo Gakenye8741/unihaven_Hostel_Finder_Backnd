@@ -81,7 +81,7 @@ UserRouter.patch("/admin/account-status/:id", adminAuth, setAccountStatus);
 /**
  * LIST ALL: Complete user database overview
  */
-UserRouter.get("/admin/all-users", adminAuth, listAllUsers);
+UserRouter.get("/all-users", listAllUsers);
 
 /**
  * ANALYTICS: System-wide user statistics
