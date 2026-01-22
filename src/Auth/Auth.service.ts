@@ -128,3 +128,20 @@ export const updateUserPasswordService = async (email: string, newPasswordHash: 
 
   if (result.length === 0) throw new Error("User not found");
 };
+
+/**
+ * Authenticated Password Change
+ * Updates the password for a user identified by their ID
+ */
+export const changePasswordService = async (id: string, newPasswordHash: string): Promise<void> => {
+  const result = await db
+    .update(users)
+    .set({ 
+      passwordHash: newPasswordHash, 
+      updatedAt: new Date() 
+    })
+    .where(eq(users.id, id))
+    .returning();
+
+  if (result.length === 0) throw new Error("Failed to update password: User not found");
+};

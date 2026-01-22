@@ -8,6 +8,8 @@ import {
   initiatePasswordResetService,
   resetPasswordWithTokenService,
   verifyAndActivateEmailService,
+  getUserByIdService,           // Added for ID lookup
+  changePasswordService,         // Added new service
 } from "./Auth.service";
 import { sendNotificationEmail } from "../middleware/GoogleMailer";
 import { 
@@ -215,5 +217,41 @@ export const resetPassword: RequestHandler = async (req, res) => {
     res.status(200).json({ message: "Password updated successfully. You can now log in." });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+// --------------------------- CHANGE PASSWORD (AUTH) ---------------------------
+
+export const changePassword: RequestHandler = async (req, res) => {
+  try {
+    // Assuming auth middleware provides req.user.id
+    const userId = (req as any).user?.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ message: "Current and new passwords are required." });
+      return;
+    }
+
+    const user = await getUserByIdService(userId);
+    if (!user || !user.passwordHash) {
+      res.status(404).json({ message: "User not found." });
+      return;
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      res.status(401).json({ message: "Incorrect current password." });
+      return;
+    }
+
+    // Hash and Save new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await changePasswordService(userId, hashedNewPassword);
+
+    res.status(200).json({ message: "Password updated successfully." });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to change password" });
   }
 };

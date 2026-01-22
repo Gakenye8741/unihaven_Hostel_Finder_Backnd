@@ -3,10 +3,13 @@ import {
   registerUser,
   loginUser,
   verifyEmail,
-  resendVerificationCode, // Renamed to match the new controller
+  resendVerificationCode,
   forgotPassword,
   resetPassword,
-} from "./Auth.controller"; // Use './' if they are in the same folder
+  changePassword, // <--- New controller imported
+} from "./Auth.controller";
+import { allAuth } from "../middleware/AuthBearer";
+
 
 const AuthRouter = Router();
 
@@ -47,5 +50,12 @@ AuthRouter.post("/forgot-password", forgotPassword);
  * @desc    Update password using secret token from email
  */
 AuthRouter.post("/reset-password", resetPassword);
+
+/**
+ * @route   PATCH /auth/change-password
+ * @desc    Change password for authenticated user (requires current password)
+ * @access  Private (Authenticated)
+ */
+AuthRouter.patch("/change-password", allAuth, changePassword);
 
 export default AuthRouter;
