@@ -10,6 +10,7 @@ import AmenityRouter from "./services/Amenities/Amenities.route";
 import RoomRouter from "./services/Rooms/Rooms.route";
 import ReviewRouter from "./services/Reviews/Reviews.route";
 import UserRouter from "./services/User/Users.Route";
+import WishlistRouter from "./services/Wishlist/Wishlist.route";
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.use("/api/amenities", AmenityRouter);
 app.use('/api/rooms', RoomRouter);
 app.use("/api/reviews", ReviewRouter);
 app.use("/api/users", UserRouter);
+app.use("/api/wishlist", WishlistRouter);
 
 // Default Message
 app.get('/', (req, res) => {

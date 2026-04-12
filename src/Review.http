@@ -1,0 +1,79 @@
+### Review System Test Suite
+@baseUrl = http://localhost:5000/api
+@hostelId = f6c76b57-e6ea-40ef-b23d-cb098365af38
+@reviewId = e5663611-c561-41ff-a37f-eacdc211df19
+@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ0OWRmY2JhLTg5MjAtNGM5NS1iN2IzLWZiMGZlYTIxM2NjMCIsImVtYWlsIjoiY29kZW1lODc0MUBnbWFpbC5jb20iLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NzU3MTk4NTcsImV4cCI6MTc3NjMyNDY1N30.Uep9pGTlNw9OYrIvSalY8wNGZIlI3ppejyC0W6U7Pps
+@ownerToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ0OWRmY2JhLTg5MjAtNGM5NS1iN2IzLWZiMGZlYTIxM2NjMCIsImVtYWlsIjoiY29kZW1lODc0MUBnbWFpbC5jb20iLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NzU3MTk4NTcsImV4cCI6MTc3NjMyNDY1N30.Uep9pGTlNw9OYrIvSalY8wNGZIlI3ppejyC0W6U7Pps
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ0OWRmY2JhLTg5MjAtNGM5NS1iN2IzLWZiMGZlYTIxM2NjMCIsImVtYWlsIjoiY29kZW1lODc0MUBnbWFpbC5jb20iLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NzU3MTk4NTcsImV4cCI6MTc3NjMyNDY1N30.Uep9pGTlNw9OYrIvSalY8wNGZIlI3ppejyC0W6U7Pps
+
+// ==========================================
+// 1. PUBLIC & GLOBAL ROUTES
+// ==========================================
+
+### Get All Reviews (Admin/Moderator View)
+GET {{baseUrl}}/reviews/
+Authorization: Bearer {{adminToken}}
+
+### Get Specific Hostel Reviews & Stats
+GET {{baseUrl}}/reviews/hostel/{{hostelId}}
+
+// ==========================================
+// 2. STUDENT ROUTES
+// ==========================================
+
+### Create a New Review
+POST {{baseUrl}}/reviews/
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+    "hostelId": "{{hostelId}}",
+    "rating": 5,
+    "title": "Amazing Place!",
+    "comment": "The WiFi is super fast and the security is top notch. Highly recommended!"
+}
+
+### Update Own Review
+PATCH {{baseUrl}}/reviews/{{reviewId}}
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+    "rating": 4,
+    "title": "Updated Review",
+    "comment": "Actually, the water was a bit cold this morning, but still great."
+}
+
+### Mark Review as Helpful
+PATCH {{baseUrl}}/reviews/{{reviewId}}/helpful
+Authorization: Bearer {{studentToken}}
+
+// ==========================================
+// 3. MANAGEMENT ROUTES
+// ==========================================
+
+### Reply to a Student Review (Owner/Caretaker)
+PATCH {{baseUrl}}/reviews/reply/{{reviewId}}
+Authorization: Bearer {{ownerToken}}
+Content-Type: application/json
+
+{
+    "ownerReply": "Thank you for the feedback, Brian! We are glad you enjoyed the fast fiber connection."
+}
+
+// ==========================================
+// 4. MODERATION & SAFETY
+// ==========================================
+
+### Report a Review for Moderation
+POST {{baseUrl}}/reviews/{{reviewId}}/report
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+    "reason": "This review contains spam links."
+}
+
+### Delete a Review (Student deletes own OR Admin moderates)
+DELETE {{baseUrl}}/reviews/{{reviewId}}
+Authorization: Bearer {{adminToken}}

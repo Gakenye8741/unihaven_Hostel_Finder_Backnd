@@ -11,8 +11,9 @@ import {
   primaryKey,
   AnyPgColumn
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { unique } from "drizzle-orm/pg-core";
+import { check } from "drizzle-orm/pg-core";
 
 // ==========================================
 // 1. ENUMS
@@ -107,6 +108,20 @@ export const hostels = pgTable("hostels", {
   createdAt: timestamp("createdAt").defaultNow(),
 });
 
+export const favorites = pgTable("favorites", {
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  hostelId: uuid("hostel_id")
+    .notNull()
+    .references(() => hostels.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.userId, table.hostelId] }),
+  };
+});
+
 export const hostelMedia = pgTable("hostelMedia", {
   id: uuid("id").primaryKey().defaultRandom(),
   hostelId: uuid("hostelId").references(() => hostels.id, { onDelete: "cascade" }).notNull(),
@@ -153,10 +168,15 @@ export const bookings = pgTable("bookings", {
 
 export const reviews = pgTable("reviews", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("userId").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  hostelId: uuid("hostelId").references(() => hostels.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("userId")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  hostelId: uuid("hostelId")
+    .references(() => hostels.id, { onDelete: "cascade" })
+    .notNull(),
   
-  rating: integer("rating").notNull(), // 1 to 5
+  // Rating with a SQL check constraint for data integrity
+  rating: integer("rating").notNull(), 
   title: varchar("title", { length: 255 }),
   comment: text("comment"),
   
@@ -164,15 +184,23 @@ export const reviews = pgTable("reviews", {
   ownerReply: text("ownerReply"),
   repliedAt: timestamp("repliedAt"),
 
-  // Metadata
+  // Metadata & Trust
   isVerified: boolean("isVerified").default(false),
   helpfulCount: integer("helpfulCount").default(0),
+
+  // New Moderation Fields
+  isFlagged: boolean("isFlagged").default(false),
+  reportReason: text("reportReason"),
   
   createdAt: timestamp("createdAt").defaultNow(),
-  updatedAt: timestamp("updatedAt").defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updatedAt")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 }, (t) => ({
   // Prevents same user from reviewing same hostel twice
   uniqueUserHostel: unique().on(t.userId, t.hostelId),
+  // Ensures rating is between 1 and 5 at the database level
+  ratingRangeCheck: check("rating_check", sql`${t.rating} >= 1 AND ${t.rating} <= 5`),
 }));
 
 export const payments = pgTable("payments", {
@@ -189,9 +217,10 @@ export const payments = pgTable("payments", {
 // ==========================================
 
 export const usersRelations = relations(users, ({ many }) => ({
-  hostels: many(hostels), // Hostels owned by this user
-  bookings: many(bookings), // Bookings made by this user
-  reviews: many(reviews), // Reviews written by this user
+  hostels: many(hostels),
+  bookings: many(bookings),
+  reviews: many(reviews),
+  wishlist: many(favorites),
 }));
 
 export const hostelsRelations = relations(hostels, ({ one, many }) => ({
@@ -200,6 +229,7 @@ export const hostelsRelations = relations(hostels, ({ one, many }) => ({
   rooms: many(rooms),
   reviews: many(reviews),
   amenities: many(hostelAmenities),
+  favoritedBy: many(favorites),
 }));
 
 export const hostelMediaRelations = relations(hostelMedia, ({ one }) => ({
@@ -223,7 +253,7 @@ export const roomsRelations = relations(rooms, ({ one, many }) => ({
 export const bookingsRelations = relations(bookings, ({ one }) => ({
   student: one(users, { fields: [bookings.studentId], references: [users.id] }),
   room: one(rooms, { fields: [bookings.roomId], references: [rooms.id] }),
-  payment: one(payments), // One booking has one primary payment record
+  payment: one(payments), 
 }));
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({
@@ -234,6 +264,18 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
 export const paymentsRelations = relations(payments, ({ one }) => ({
   booking: one(bookings, { fields: [payments.bookingId], references: [bookings.id] }),
 }));
+
+export const favoritesRelations = relations(favorites, ({ one }) => ({
+  user: one(users, { 
+    fields: [favorites.userId], 
+    references: [users.id] 
+  }),
+  hostel: one(hostels, { 
+    fields: [favorites.hostelId], 
+    references: [hostels.id] 
+  }),
+}));
+
 
 // ==========================================
 // 4. GROUPED TYPES
@@ -248,6 +290,8 @@ export type TSelectHostel = typeof hostels.$inferSelect;
 export type TInsertHostel = typeof hostels.$inferInsert;
 export type TSelectHostelMedia = typeof hostelMedia.$inferSelect;
 export type TInsertHostelMedia = typeof hostelMedia.$inferInsert;
+export type TSelectFavorites = typeof favorites.$inferSelect;
+export type TInsertFavorites = typeof favorites.$inferInsert;
 
 // Room & Amenity Types
 export type TSelectRoom = typeof rooms.$inferSelect;

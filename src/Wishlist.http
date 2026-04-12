@@ -1,0 +1,63 @@
+### Configuration
+@baseUrl = http://localhost:5000/api
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ0OWRmY2JhLTg5MjAtNGM5NS1iN2IzLWZiMGZlYTIxM2NjMCIsImVtYWlsIjoiY29kZW1lODc0MUBnbWFpbC5jb20iLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NzU2NzY2NjUsImV4cCI6MTc3NjI4MTQ2NX0.xZLRbF5SvlsvOBjjKpEXSx6SBGgekIG9XNuWqtCAiLc
+@hostelId = f6c76b57-e6ea-40ef-b23d-cb098365af38
+
+// ==========================================
+// 1. ADD TO WISHLIST
+// ==========================
+POST {{baseUrl}}/wishlist
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "hostelId": "{{hostelId}}"
+}
+
+###
+
+// ==========================================
+// 2. LIST STUDENT WISHLIST
+// ==========================
+GET {{baseUrl}}/wishlist
+Authorization: Bearer {{authToken}}
+
+###
+
+// ==========================================
+// 3. CHECK FAVORITE STATUS
+// ==========================
+GET {{baseUrl}}/wishlist/status/{{hostelId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+// ==========================================
+// 4. GET WISHLIST STATS
+// ==========================
+GET {{baseUrl}}/wishlist/stats
+Authorization: Bearer {{authToken}}
+
+###
+
+// ==========================================
+// 5. GET HOSTEL POPULARITY (Social Proof)
+// ==========================
+GET {{baseUrl}}/wishlist/popularity/{{hostelId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+// ==========================================
+// 6. REMOVE FROM WISHLIST
+// ==========================
+DELETE {{baseUrl}}/wishlist/{{hostelId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+// ==========================================
+// 7. CLEAR ALL WISHLIST
+// ==========================
+DELETE {{baseUrl}}/wishlist
+Authorization: Bearer {{authToken}}
