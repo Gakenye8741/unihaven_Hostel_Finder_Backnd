@@ -180,7 +180,7 @@ export const forgotPassword: RequestHandler = async (req, res) => {
 
     if (resetToken) {
       // Logic: Use the ENV variable, but fallback to localhost:5173 if it's missing
-      const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      const baseUrl = process.env.FRONTEND_URL || "https://uni-hostel-finder.netlify.app";
       const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
       const buttonHtml = emailButton("Reset Password", resetUrl);
